@@ -1,100 +1,147 @@
 document.addEventListener("DOMContentLoaded", function(){
 	
-	// Model qui permet de récupérer la data
 	class Model {
-
+		
 		constructor() {
-			this.data = [
+			this.pages = [
 				{
 					title: 'Homepage',
-					url: '/',
+					url: '#',
 					background: 'red',
-                    public: true,
-                    content: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis consequatur temporibus sequi aliquid. Ipsa, sapiente expedita. Inventore dolore at quidem, aperiam porro, nobis beatae quo molestiae possimus magnam deserunt quasi'
+					content:`
+					<div>
+						Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+						<ul>
+							<li>Lorem, ipsum</li>
+							<li>dolor sit amet consectetur</li>
+							<li>adipisicing elit</li>
+						</ul>
+					</div>
+					<div class="parallax">
+					</div>
+					<div>
+						Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+						<ul>
+							<li>Lorem, ipsum</li>
+							<li>dolor sit amet consectetur</li>
+							<li>adipisicing elit</li>
+						</ul>
+					</div>
+					`,
+					dynamisme: () => {
+						window.addEventListener('scroll', (e) => {
+							let scrollTop = e.target.scrollingElement.scrollTop
+
+							document.querySelector('.parallax').style.backgroundPosition = `center calc(50% + ${scrollTop / 2}px)`
+						})
+					}
 				},
 				{
 					title: 'Personnages',
-					url: '/personnages',
-					background: 'green',
-                    public: true,
-                    content: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis consequatur temporibus sequi aliquid. Ipsa, sapiente expedita. Inventore dolore at quidem, aperiam porro, nobis beatae quo molestiae possimus magnam deserunt quasi'
-                },
-                {
-					title: 'Evangelions',
-					url: '/evangelions',
-					background: 'green',
-                    public: true,
-                    content: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis consequatur temporibus sequi aliquid. Ipsa, sapiente expedita. Inventore dolore at quidem, aperiam porro, nobis beatae quo molestiae possimus magnam deserunt quasi'
-                },
-                {
+					url: '#personnages',
+					background: 'purple',
+					form: true
+				},
+				{
 					title: 'Anges',
-					url: '/anges',
-					background: 'green',
-                    public: true,
-                    content: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis consequatur temporibus sequi aliquid. Ipsa, sapiente expedita. Inventore dolore at quidem, aperiam porro, nobis beatae quo molestiae possimus magnam deserunt quasi'
-                },
-                {
-					title: 'World',
-					url: '/world',
-					background: 'green',
-                    public: true,
-                    content: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis consequatur temporibus sequi aliquid. Ipsa, sapiente expedita. Inventore dolore at quidem, aperiam porro, nobis beatae quo molestiae possimus magnam deserunt quasi'
-                },
-                {
-					title: 'Shinji Ikari',
-					url: '/personnages/shinji',
-					background: 'green',
-                    public: true,
-                    content: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis consequatur temporibus sequi aliquid. Ipsa, sapiente expedita. Inventore dolore at quidem, aperiam porro, nobis beatae quo molestiae possimus magnam deserunt quasi'
-                },
-                {
-					title: 'Rei Ayanami',
-					url: '/personnages/rei',
-					background: 'green',
-                    public: true,
-                    content: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis consequatur temporibus sequi aliquid. Ipsa, sapiente expedita. Inventore dolore at quidem, aperiam porro, nobis beatae quo molestiae possimus magnam deserunt quasi'
-                },
-                {
-					title: 'Asuka Langley Soryu',
-					url: '/personnages/asuka',
-					background: 'green',
-                    public: true,
-                    content: 'Lorem ipsum, dolor sit amet consectetur adipisicing elit. Perspiciatis consequatur temporibus sequi aliquid. Ipsa, sapiente expedita. Inventore dolore at quidem, aperiam porro, nobis beatae quo molestiae possimus magnam deserunt quasi'
+					url: '#anges',
+					background: 'blue'
+				},
+				{
+					title: 'Monde',
+					url: '#monde',
+					background: 'green'
 				}
 			]
 		}
 
 		getPageByUrl(url) {
-			return this.data.find(page => page.url === url)
+			return this.pages.find(page => page.url == url)
 		}
+
 	}
 
-	// View qui permet de modifier le template html
 	class View {
-		constructor() {
+
+		constructor(pages) {
 			this.container = document.querySelector('.container')
+			this.container.innerHTML = ''
+			this.addHeader(pages)
 		}
 
-		changeBackground(option) {
-			this.container.style.background = option.background
+		addContent(content) {
+			let contentContainer = document.createElement('div')
+			contentContainer.classList.add('content')
+			contentContainer.innerHTML = content
+
+			this.container.appendChild(contentContainer)
 		}
 
-		changeTitle(option) {
-			this.container.innerHTML = option.title
+		run(dynamisme) {
+			dynamisme()
 		}
+
+		addHeader(pages) {
+			pages.forEach(page => {
+				const pageButton = document.createElement('button')
+
+				pageButton.innerText = page.title
+
+				this.container.appendChild(pageButton)
+
+				pageButton.addEventListener('click', () => {
+					location.hash = page.url
+				})
+			})
+		}
+
+		changeTitle(text) {
+			const title = document.createElement('h1')
+
+			title.innerText = text
+
+			this.container.appendChild(title)
+		}
+
+		changeBackground(color) {
+			this.container.style.background = color
+		}
+
+		addForm() {
+			let input = document.createElement('input')
+			input.setAttribute('type', 'text')
+			input.classList.add('input-text')
+
+			this.container.appendChild(input)
+		}
+
 	}
 
-	// Controller qui permet de gérer l'ensemble de l'application
 	function controller() {
-		const currentUrl = '/personnages/shinji'
-		const data = new Model()
+		let data = new Model()
 
-		const currentPage = data.getPageByUrl(currentUrl)
+		const currentPage = data.getPageByUrl(location.hash || '#')
 
-		const render = new View()
-		render.changeBackground(currentPage)
-		render.changeTitle(currentPage)
+		let page = new View(data.pages)
+		page.changeTitle(currentPage.title)
+		page.changeBackground(currentPage.background)
+
+		if(currentPage.content) {
+			page.addContent(currentPage.content)
+		}
+
+		if(typeof currentPage.dynamisme === 'function') {
+			page.run(currentPage.dynamisme)
+		}
+
+		if(currentPage.form) {
+			page.addForm()
+		}
 	}
+
+	window.addEventListener('hashchange', () => {
+		controller()
+	})
 
 	controller()
 
